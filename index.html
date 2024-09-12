@@ -1,26 +1,64 @@
 <!doctype html>
 <html>
     <head>
+        <!--
+        これは、A-FrameとAR.jsを使用したWebARの設定です。
+        ビデオアセットを順次読み込み、利用可能になり次第再生します。
+        -->
         <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
         <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
         <script>
             AFRAME.registerComponent('videohandler', {
+                schema: {
+                    videoId: { type: 'string' }
+                },
                 init: function () {
                     var marker = this.el;
-                    this.vid = document.querySelector("#vid");
+                    this.vid = document.querySelector(this.data.videoId);
 
-                    marker.addEventListener('markerFound', function () {
-                        this.toggle = true;
-                        this.vid.play();
-                    }.bind(this));
+                    // 現在再生中のビデオを追跡するグローバル変数
+                    if (!window.currentPlayingVideo) {
+                        window.currentPlayingVideo = null;
+                    }
 
-                    marker.addEventListener('markerLost', function () {
-                        this.toggle = false;
-                        this.vid.pause();
-                    }.bind(this));
+                    // ビデオがすでに読み込まれているかを確認
+                    if (this.vid.readyState >= 3) {
+                        marker.addEventListener('markerFound', () => {
+                            this.playVideo();
+                        });
+                    } else {
+                        this.vid.addEventListener('loadeddata', () => {
+                            marker.addEventListener('markerFound', () => {
+                                this.playVideo();
+                            });
+                        });
+                    }
+
+                    marker.addEventListener('markerLost', () => {
+                        this.pauseVideo();
+                    });
+
+                    // iPhoneで音声が再生されるようにする
+                    window.addEventListener('click', () => {
+                        this.vid.muted = false;
+                    });
                 },
+                playVideo: function() {
+                    // 他のビデオが再生中の場合は停止
+                    if (window.currentPlayingVideo && window.currentPlayingVideo !== this.vid) {
+                        window.currentPlayingVideo.pause();
+                    }
+                    this.vid.play();
+                    window.currentPlayingVideo = this.vid;
+                },
+                pauseVideo: function() {
+                    this.vid.pause();
+                    if (window.currentPlayingVideo === this.vid) {
+                        window.currentPlayingVideo = null;
+                    }
+                }
             });
         </script>
     </head>
@@ -35,42 +73,272 @@
             gesture-detector
         >
             <a-assets>
-                <video
-                    id="vid"
-                    src="assets/asset.mp4"
-                    preload="auto"
-                    response-type="arraybuffer"
-                    loop
-                    crossorigin
-                    webkit-playsinline
-                    autoplay
-                    muted
-                    playsinline
-                ></video>
+                <!-- 22個のビデオアセットを定義 -->
+                <video id="vid1" src="assets/asset1.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid2" src="assets/asset2.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid3" src="assets/asset3.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid4" src="assets/asset4.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid5" src="assets/asset5.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid6" src="assets/asset6.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid7" src="assets/asset7.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid8" src="assets/asset8.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid9" src="assets/asset9.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid10" src="assets/asset10.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid11" src="assets/asset11.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid12" src="assets/asset12.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid13" src="assets/asset13.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid14" src="assets/asset14.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid15" src="assets/asset15.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid16" src="assets/asset16.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid17" src="assets/asset17.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid18" src="assets/asset18.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid19" src="assets/asset19.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid20" src="assets/asset20.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid21" src="assets/asset21.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
+                <video id="vid22" src="assets/asset22.mp4" preload="auto" loop crossorigin webkit-playsinline playsinline></video>
             </a-assets>
+
+            <!-- 22個のマーカーを定義し、それぞれを対応するビデオに関連付け -->
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker1.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid1"
+                id="marker1"
+            >
+                <a-video src="#vid1" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
 
             <a-marker
                 type="pattern"
                 preset="custom"
-                url="assets/marker.patt"
-                videohandler
-                smooth="true"
-                smoothCount="10"
-                smoothTolerance="0.01"
-                smoothThreshold="5"
-                raycaster="objects: .clickable"
-                emitevents="true"
-                cursor="fuse: false; rayOrigin: mouse;"
-                id="markerA"
+                url="assets/marker2.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid2"
+                id="marker2"
             >
-                <a-video
-                    src="#vid"
-                    scale="1 1 1"
-                    position="0 0.1 0"
-                    rotation="-90 0 0"
-                    class="clickable"
-                    gesture-handler
-                ></a-video>
+                <a-video src="#vid2" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker3.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid3"
+                id="marker3"
+            >
+                <a-video src="#vid3" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker4.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid4"
+                id="marker4"
+            >
+                <a-video src="#vid4" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker5.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid5"
+                id="marker5"
+            >
+                <a-video src="#vid5" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker6.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid6"
+                id="marker6"
+            >
+                <a-video src="#vid6" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker7.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid7"
+                id="marker7"
+            >
+                <a-video src="#vid7" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker8.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid8"
+                id="marker8"
+            >
+                <a-video src="#vid8" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker9.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid9"
+                id="marker9"
+            >
+                <a-video src="#vid9" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker10.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid10"
+                id="marker10"
+            >
+                <a-video src="#vid10" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker11.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid11"
+                id="marker11"
+            >
+                <a-video src="#vid11" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker12.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid12"
+                id="marker12"
+            >
+                <a-video src="#vid12" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker13.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid13"
+                id="marker13"
+            >
+                <a-video src="#vid13" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker14.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid14"
+                id="marker14"
+            >
+                <a-video src="#vid14" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker15.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid15"
+                id="marker15"
+            >
+                <a-video src="#vid15" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker16.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid16"
+                id="marker16"
+            >
+                <a-video src="#vid16" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker17.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid17"
+                id="marker17"
+            >
+                <a-video src="#vid17" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker18.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid18"
+                id="marker18"
+            >
+                <a-video src="#vid18" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker19.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid19"
+                id="marker19"
+            >
+                <a-video src="#vid19" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker20.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid20"
+                id="marker20"
+            >
+                <a-video src="#vid20" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker21.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid21"
+                id="marker21"
+            >
+                <a-video src="#vid21" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+            </a-marker>
+
+            <a-marker
+                type="pattern"
+                preset="custom"
+                url="assets/marker22.patt"
+                patternRatio="0.50"
+                videohandler="videoId: #vid22"
+                id="marker22"
+            >
+                <a-video src="#vid22" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
             </a-marker>
 
             <a-entity camera></a-entity>
