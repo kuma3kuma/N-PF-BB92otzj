@@ -18,6 +18,12 @@
                     var marker = this.el;
                     this.vid = document.querySelector(this.data.videoId);
 
+                    // 全てのビデオ要素を取得
+                    this.allVideos = document.querySelectorAll('video');
+
+                    // iOS用のタップイベントリスナーを追加
+                    document.body.addEventListener('touchend', this.handleTap.bind(this));
+
                     // 現在再生中のビデオを追跡するグローバル変数
                     if (!window.currentPlayingVideo) {
                         window.currentPlayingVideo = null;
@@ -45,12 +51,24 @@
                         this.vid.muted = false;
                     });
                 },
-                playVideo: function() {
-                    // 他のビデオが再生中の場合は停止
-                    if (window.currentPlayingVideo && window.currentPlayingVideo !== this.vid) {
-                        window.currentPlayingVideo.pause();
+                handleTap: function(event) {
+                    if (this.vid.paused && this.el.object3D.visible) {
+                        this.playVideo();
                     }
-                    this.vid.play();
+                },
+                playVideo: function() {
+                    // 全てのビデオを一時停止
+                    this.allVideos.forEach(video => {
+                        if (video !== this.vid) {
+                            video.pause();
+                            video.currentTime = 0;
+                        }
+                    });
+
+                    // 現在のビデオを再生
+                    this.vid.play().catch(error => {
+                        console.error('Video playback failed:', error);
+                    });
                     window.currentPlayingVideo = this.vid;
                 },
                 pauseVideo: function() {
